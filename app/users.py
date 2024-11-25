@@ -37,7 +37,7 @@ def create_new_user(user_data: CreateUser, db:Session = Depends(get_db)):
 def delete_user(id: int, db: Session = Depends(get_db)):
     deleted_user = db.query(models.User).filter(models.User.id == id)
     if deleted_user.first() is None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"The id: {id} you requested for does not exist")
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"The user with ID: {id} you requested to delete does not exist")
     deleted_user.delete(synchronize_session=False)
     db.commit()
 
@@ -47,7 +47,7 @@ def patch_user(id: int, update_data: Dict[str, Any], db: Session = Depends(get_d
     patch_user = patch_query.first()
 
     if patch_user is  None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"The mood with id: {id} does not exist")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"The user with ID: {id} does not exist")
     
     for key, value in update_data.items():
         if hasattr(patch_user, key):
