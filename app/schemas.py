@@ -5,9 +5,9 @@ class UserBase(BaseModel):
     email: str
     password: str
 
-    class config:
+    class Config:
         form_attributes = True 
 
 class CreateUser(UserBase):
-    class config:
+    class Config:
         form_attributes = True
