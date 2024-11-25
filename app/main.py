@@ -1,8 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import app.models as models
-import app.database as database
-import app.users as users
+try:
+    import app.models as models
+    import app.database as database
+    import app.users as users
+except ImportError:
+    import models
+    import database
+    import users
 
 models.Base.metadata.create_all(bind=database.engine)
 

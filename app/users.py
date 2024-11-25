@@ -2,11 +2,27 @@ from typing import List, Dict, Any
 from fastapi import HTTPException, Depends, APIRouter
 from sqlalchemy.orm import Session
 from starlette import status
-import app.models as models
-import app.schemas as schemas
-from app.models import User
-from app.schemas import CreateUser
-from app.database import get_db
+try:
+   # Local environment imports
+   import app.models as models
+   import app.schemas as schemas
+   from app.models import User
+   from app.schemas import CreateUser
+   from app.database import get_db
+except ImportError:
+   # Docker environment imports
+   import models as models
+   import schemas as schemas
+   from models import User
+   from schemas import CreateUser
+   from database import get_db
+# from app import models as models
+# from app import schemas as schemas
+# # import app.models as models
+# # import app.schemas as schemas
+# from models import User
+# from app.schemas import CreateUser
+# from app.database import get_db
 
 router = APIRouter(
     prefix='/user',
