@@ -1,6 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.sql import text
+
 # from dotenv import load_dotenv
 import os
 
@@ -30,3 +32,9 @@ def get_db():
         yield db
     finally:
         db.close()
+
+try:
+    with engine.connect() as connection:
+        connection.execute(text("SELECT 1"))
+except Exception as e:
+    raise RuntimeError("Database connection test failed.") from e
