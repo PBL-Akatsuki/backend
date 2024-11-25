@@ -9,6 +9,6 @@ class User(Base):
     username = Column(String, nullable=False)
     email = Column(String, nullable=False)
     password = Column(String, nullable=False)
-    published = Column(Boolean, server_default='TRUE')
+    published = Column(Boolean, server_default=text('TRUE'))
     created_at = Column(TIMESTAMP(timezone=True),
                         server_default=text('now()'))
