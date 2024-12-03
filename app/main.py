@@ -1,22 +1,14 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-try:
-    import app.models as models
-    import app.database as database
-    import app.users as users
-except ImportError:
-    import models
-    import database
-    import users
+from starlette.middleware.sessions import SessionMiddleware
+import os
+from . import models, database, users
 
 models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI()
 
-app.include_router(users.router)
-
-origins = ["*"]
-
+origins = ["http://localhost:5173"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -25,11 +17,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.add_middleware(SessionMiddleware, secret_key=os.environ.get("SESSION_SECRET", "your-secret-key"))
+
+app.include_router(users.router)
 
 @app.get("/")
 def read_root():
     return {"message": "Welcome to FastAPI!"}
-
 
 @app.get("/health")
 def health_check():
