@@ -1,7 +1,5 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.sql import text
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker, declarative_base
 import os
 
 # Get environment or use default
@@ -10,11 +8,12 @@ DATABASE_URL = os.getenv(
     # Default to localhost for local development
     "postgresql://user:password@localhost:5432/mydatabase"
 )
+
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-
+# Database dependency for FastAPI routes
 def get_db():
     db = SessionLocal()
     try:
@@ -25,7 +24,7 @@ def get_db():
     finally:
         db.close()
 
-
+# Test database connection
 try:
     with engine.connect() as connection:
         connection.execute(text("SELECT 1"))
