@@ -1,3 +1,5 @@
+version: "3.8"
+
 services:
   postgres:
     image: postgres:15
@@ -29,6 +31,7 @@ services:
   fastapi:
     build:
       context: ./app
+      dockerfile: Dockerfile
     container_name: fastapi-app
     restart: always
     ports:
@@ -40,5 +43,6 @@ services:
     environment:
       DATABASE_URL: postgresql://user:password@postgres:5432/mydatabase
       PYTHONPATH: /app
+
 volumes:
   postgres_data:
