@@ -3,6 +3,8 @@ from fastapi import HTTPException, Depends, APIRouter, Request
 from sqlalchemy.orm import Session
 from fastapi import status
 from fastapi.responses import RedirectResponse
+from starlette.responses import RedirectResponse
+import urllib.parse
 
 try:
     from app.database import get_db
@@ -39,9 +41,11 @@ oauth.register(
     authorize_params={"access_type": "offline", "prompt": "consent"},
 )
 
+
 @router.get('/', response_model=List[CreateUser])
 def get_users(db: Session = Depends(get_db)):
     return db.query(User).all()
+
 
 @router.post('/signup', status_code=status.HTTP_201_CREATED)
 def create_user(user: CreateUser, db: Session = Depends(get_db)):
@@ -52,13 +56,16 @@ def create_user(user: CreateUser, db: Session = Depends(get_db)):
 
     if existing_user:
         # Redirect to the login page if the user already exists
-        response = RedirectResponse(url="http://localhost:5173/login", status_code=status.HTTP_303_SEE_OTHER)
-        response.set_cookie(key="message", value="User already exists. Please login.", httponly=False)
+        response = RedirectResponse(
+            url="http://localhost:5173/login", status_code=status.HTTP_303_SEE_OTHER)
+        response.set_cookie(
+            key="message", value="User already exists. Please login.", httponly=False)
         return response
 
     # Hash the password and create a new user
     hashed_password = hash_password(user.password)
-    new_user = User(username=user.username, email=user.email, password=hashed_password)
+    new_user = User(username=user.username, email=user.email,
+                    password=hashed_password)
 
     db.add(new_user)
     db.commit()
@@ -67,15 +74,19 @@ def create_user(user: CreateUser, db: Session = Depends(get_db)):
 
     return {"message": "User created successfully", "redirect_url": "http://localhost:5173/"}
 
+
 @router.post('/login', status_code=status.HTTP_200_OK)
 def login(user: LoginUser, db: Session = Depends(get_db)):
     db_user = db.query(User).filter(
-        (User.username == user.username_or_email) | (User.email == user.username_or_email)
+        (User.username == user.username_or_email) | (
+            User.email == user.username_or_email)
     ).first()
     if not db_user or not verify_password(user.password, db_user.password):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     token = create_access_token({"sub": db_user.email})
-    return {"access_token": token, "token_type": "bearer"}
+    return {"access_token": token, "token_type": "bearer", "username": db_user.username}
+
 
 @router.get('/google/login')
 async def google_login(request: Request):
@@ -86,30 +97,67 @@ async def google_login(request: Request):
         print(f"Error during Google Login: {e}")
         raise HTTPException(status_code=500, detail=f"Google Login Error: {e}")
 
+
 @router.get('/google/auth')
 async def google_auth(request: Request, db: Session = Depends(get_db)):
     try:
         token = await oauth.google.authorize_access_token(request)
         user_info = token.get('userinfo')
         if not user_info:
-            raise HTTPException(status_code=400, detail="Google authentication failed")
+            raise HTTPException(
+                status_code=400, detail="Google authentication failed")
 
-        db_user = db.query(User).filter(User.email == user_info['email']).first()
+        db_user = db.query(User).filter(
+            User.email == user_info['email']).first()
         if not db_user:
-            db_user = User(username=user_info['name'], email=user_info['email'], password="google_oauth")
+            db_user = User(
+                username=user_info['name'], email=user_info['email'], password="google_oauth"
+            )
             db.add(db_user)
             db.commit()
             db.refresh(db_user)
 
-        return RedirectResponse(url="http://localhost:5173/")
+        # Create an access token for the user
+        access_token = create_access_token({"sub": db_user.email})
+
+        # Redirect to frontend with the token and username
+        redirect_url = f"http://localhost:5173/google-login?token={access_token}&username={db_user.username}"
+        print(f"Redirecting to: {redirect_url}")
+        return RedirectResponse(url=redirect_url)
+
     except Exception as e:
+        print(f"Error during Google authentication: {e}")
         raise HTTPException(status_code=500, detail=f"Google Auth Error: {e}")
+
+# @router.get('/google/auth')
+# async def google_auth(request: Request, db: Session = Depends(get_db)):
+#     try:
+#         token = await oauth.google.authorize_access_token(request)
+#         user_info = token.get('userinfo')
+#         if not user_info:
+#             raise HTTPException(
+#                 status_code=400, detail="Google authentication failed")
+
+#         db_user = db.query(User).filter(
+#             User.email == user_info['email']).first()
+#         if not db_user:
+#             db_user = User(
+#                 username=user_info['name'], email=user_info['email'], password="google_oauth")
+#             db.add(db_user)
+#             db.commit()
+#             db.refresh(db_user)
+
+#         return RedirectResponse(url="http://localhost:5173/")
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=f"Google Auth Error: {e}")
+
 
 @router.delete('/delete-user/{id}', status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(id: int, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == id).first()
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with ID {id} not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"User with ID {id} not found")
     db.delete(user)
     db.commit()
     return {"message": "User deleted successfully"}
@@ -119,17 +167,18 @@ def delete_user(id: int, db: Session = Depends(get_db)):
 def update_user(id: int, update_data: Dict[str, Any], db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == id).first()
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with ID {id} not found")
-    
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"User with ID {id} not found")
+
     for key, value in update_data.items():
         if hasattr(user, key):
             if key == 'password':
                 value = hash_password(value)
             setattr(user, key, value)
         else:
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Invalid field: {key}")
-    
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail=f"Invalid field: {key}")
+
     db.commit()
     db.refresh(user)
     return user
-
