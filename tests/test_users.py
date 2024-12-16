@@ -2,12 +2,15 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+
 try:
-    from app.database import Base
+    from app.database import get_db
     from app.main import app
+    from app.models import Base
 except ImportError:
-    from database import Base
+    from database import get_db
     from main import app
+    from models import Base
 
 # Test database setup
 TEST_DATABASE_URL = "postgresql://user:password@localhost:5432/mydatabase"
