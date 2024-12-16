@@ -100,6 +100,50 @@
 
 ---
 
+## Testing the Application
+
+### Running Tests
+
+**Run all tests**:
+
+```bash
+PYTHONPATH=. pytest -v tests/
+```
+
+This will run all the test cases in the `tests/` directory. It includes tests for:
+
+- User creation and authentication.
+- Retrieving user information.
+- Database operations like adding, updating, and deleting users.
+
+**To check test coverage**:
+
+```bash
+PYTHONPATH=. pytest --cov=app tests/
+```
+
+This will show how much of your code is covered by the tests.
+
+### What Tests Are Included?
+
+- **User Routes**:
+
+  - Test user creation (`/signup`).
+  - Test user login (`/login`).
+  - Test user deletion (`/delete-user/{id}`).
+  - Test user updates (`/update-user/{id}`).
+
+- **Database Operations**:
+
+  - Verify database integration for CRUD operations.
+
+- **Edge Cases**:
+  - Attempting to create a user with missing fields.
+  - Logging in with invalid credentials.
+  - Deleting a non-existent user.
+
+---
+
 ## How it works:
 
 ### Development:
@@ -112,3 +156,8 @@
 
 - For production:
   - **Dockerized Deployment**: FastAPI, PostgreSQL, and pgAdmin run inside containers.
+
+### Testing:
+
+- Tests are implemented using `pytest` to ensure the reliability of the application.
+- Covers both happy paths and edge cases to prevent regressions and ensure robustness.
