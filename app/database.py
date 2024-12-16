@@ -9,7 +9,7 @@ DATABASE_URL = os.getenv(
     "postgresql://user:password@localhost:5432/mydatabase"
 )
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(DATABASE_URL, future=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
