@@ -1,30 +1,16 @@
 from typing import List, Dict, Any
-from fastapi import HTTPException, Depends, APIRouter, Request
-from sqlalchemy.orm import Session
-from fastapi import status
-from fastapi.responses import RedirectResponse
+from fastapi import HTTPException, Depends, APIRouter, Request, status
 from starlette.responses import RedirectResponse
-import urllib.parse
+from sqlalchemy.orm import Session
 
-try:
-    from app.database import get_db
-    from app.models import User
-    from app.schemas import CreateUser, LoginUser
-    from app.utils import verify_password, hash_password, create_access_token
-except ImportError:
-    from database import get_db
-    from models import User
-    from schemas import CreateUser, LoginUser
-    from utils import verify_password, hash_password, create_access_token
+from app.database import get_db
+from app.models import User
+from app.schemas import CreateUser, LoginUser
+from app.utils import verify_password, hash_password, create_access_token
 
-
-# from .database import get_db
-# from .models import User
-# from .schemas import CreateUser, LoginUser
-# from .utils import verify_password, hash_password, create_access_token
 from authlib.integrations.starlette_client import OAuth
 
-
+# FastAPI Router
 router = APIRouter(
     prefix='/user',
     tags=['User']
@@ -49,20 +35,17 @@ def get_users(db: Session = Depends(get_db)):
 
 @router.post('/signup', status_code=status.HTTP_201_CREATED)
 def create_user(user: CreateUser, db: Session = Depends(get_db)):
-    # Check if the user already exists by email or username
     existing_user = db.query(User).filter(
         (User.email == user.email) | (User.username == user.username)
     ).first()
 
     if existing_user:
-        # Redirect to the login page if the user already exists
         response = RedirectResponse(
             url="http://localhost:5173/login", status_code=status.HTTP_303_SEE_OTHER)
         response.set_cookie(
             key="message", value="User already exists. Please login.", httponly=False)
         return response
 
-    # Hash the password and create a new user
     hashed_password = hash_password(user.password)
     new_user = User(username=user.username, email=user.email,
                     password=hashed_password)
@@ -70,7 +53,6 @@ def create_user(user: CreateUser, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-    print(new_user)
 
     return {"message": "User created successfully", "redirect_url": "http://localhost:5173/"}
 
@@ -117,10 +99,7 @@ async def google_auth(request: Request, db: Session = Depends(get_db)):
             db.commit()
             db.refresh(db_user)
 
-        # Create an access token for the user
         access_token = create_access_token({"sub": db_user.email})
-
-        # Redirect to frontend with the token and username
         redirect_url = f"http://localhost:5173/google-login?token={access_token}&username={db_user.username}"
         print(f"Redirecting to: {redirect_url}")
         return RedirectResponse(url=redirect_url)
@@ -128,28 +107,6 @@ async def google_auth(request: Request, db: Session = Depends(get_db)):
     except Exception as e:
         print(f"Error during Google authentication: {e}")
         raise HTTPException(status_code=500, detail=f"Google Auth Error: {e}")
-
-# @router.get('/google/auth')
-# async def google_auth(request: Request, db: Session = Depends(get_db)):
-#     try:
-#         token = await oauth.google.authorize_access_token(request)
-#         user_info = token.get('userinfo')
-#         if not user_info:
-#             raise HTTPException(
-#                 status_code=400, detail="Google authentication failed")
-
-#         db_user = db.query(User).filter(
-#             User.email == user_info['email']).first()
-#         if not db_user:
-#             db_user = User(
-#                 username=user_info['name'], email=user_info['email'], password="google_oauth")
-#             db.add(db_user)
-#             db.commit()
-#             db.refresh(db_user)
-
-#         return RedirectResponse(url="http://localhost:5173/")
-#     except Exception as e:
-#         raise HTTPException(status_code=500, detail=f"Google Auth Error: {e}")
 
 
 @router.delete('/delete-user/{id}', status_code=status.HTTP_204_NO_CONTENT)
