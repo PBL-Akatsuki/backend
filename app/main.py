@@ -2,7 +2,10 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 import os
-from . import models, database, users
+try:
+    from app import models, database, users
+except ImportError:
+    import models, database, users
 
 models.Base.metadata.create_all(bind=database.engine)
 

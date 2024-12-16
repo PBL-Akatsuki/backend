@@ -3,11 +3,25 @@ from fastapi import HTTPException, Depends, APIRouter, Request
 from sqlalchemy.orm import Session
 from fastapi import status
 from fastapi.responses import RedirectResponse
-from .database import get_db
-from .models import User
-from .schemas import CreateUser, LoginUser
-from .utils import verify_password, hash_password, create_access_token
+
+try:
+    from app.database import get_db
+    from app.models import User
+    from app.schemas import CreateUser, LoginUser
+    from app.utils import verify_password, hash_password, create_access_token
+except ImportError:
+    from database import get_db
+    from models import User
+    from schemas import CreateUser, LoginUser
+    from utils import verify_password, hash_password, create_access_token
+
+
+# from .database import get_db
+# from .models import User
+# from .schemas import CreateUser, LoginUser
+# from .utils import verify_password, hash_password, create_access_token
 from authlib.integrations.starlette_client import OAuth
+
 
 router = APIRouter(
     prefix='/user',
@@ -49,6 +63,7 @@ def create_user(user: CreateUser, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+    print(new_user)
 
     return {"message": "User created successfully", "redirect_url": "http://localhost:5173/"}
 
@@ -99,16 +114,22 @@ def delete_user(id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "User deleted successfully"}
 
+
 @router.patch('/update-user/{id}', response_model=CreateUser)
 def update_user(id: int, update_data: Dict[str, Any], db: Session = Depends(get_db)):
     user = db.query(User).filter(User.id == id).first()
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User with ID {id} not found")
+    
     for key, value in update_data.items():
         if hasattr(user, key):
+            if key == 'password':
+                value = hash_password(value)
             setattr(user, key, value)
         else:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Invalid field: {key}")
+    
     db.commit()
     db.refresh(user)
     return user
+
