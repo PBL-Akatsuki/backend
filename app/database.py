@@ -20,11 +20,13 @@ import os
 # Get environment or use default
 DATABASE_URL = os.getenv(
     "DATABASE_URL",
-    "postgresql://user:password@localhost:5432/mydatabase"  # Default to localhost for local development
+    # Default to localhost for local development
+    "postgresql://user:password@localhost:5432/mydatabase"
 )
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+
 
 def get_db():
     db = SessionLocal()
@@ -35,6 +37,7 @@ def get_db():
         raise
     finally:
         db.close()
+
 
 try:
     with engine.connect() as connection:

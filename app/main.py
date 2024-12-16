@@ -1,9 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
+import os
 try:
-    import app.models as models
-    import app.database as database
-    import app.users as users
+    from app import models, database, users
 except ImportError:
     import models
     import database
@@ -13,17 +13,19 @@ models.Base.metadata.create_all(bind=database.engine)
 
 app = FastAPI()
 
-app.include_router(users.router)
-
-origins = ["*"]
-
+origins = ["http://localhost:5173"]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.add_middleware(SessionMiddleware, secret_key=os.environ.get(
+    "SESSION_SECRET", "your-secret-key"))
+
+app.include_router(users.router)
 
 
 @app.get("/")
