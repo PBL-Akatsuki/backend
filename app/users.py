@@ -3,10 +3,16 @@ from fastapi import HTTPException, Depends, APIRouter, Request, status
 from starlette.responses import RedirectResponse
 from sqlalchemy.orm import Session
 
-from app.database import get_db
-from app.models import User
-from app.schemas import CreateUser, LoginUser
-from app.utils import verify_password, hash_password, create_access_token
+try:
+    from app.database import get_db
+    from app.models import User
+    from app.schemas import CreateUser, LoginUser
+    from app.utils import verify_password, hash_password, create_access_token
+except ImportError:
+    from database import get_db
+    from models import User
+    from schemas import CreateUser, LoginUser
+    from utils import verify_password, hash_password, create_access_token
 
 from authlib.integrations.starlette_client import OAuth
 

@@ -1,21 +1,6 @@
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.sql import text
-
-# from dotenv import load_dotenv
+from sqlalchemy import create_engine, text
+from sqlalchemy.orm import sessionmaker, declarative_base
 import os
-
-# load_dotenv()
-
-# # DATABASE_URL = os.getenv("DATABASE_URL")
-# DATABASE_URL = "postgresql://user:password@postgres:5432/mydatabase"
-
-# engine = create_engine(DATABASE_URL)
-
-# SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-# Base = declarative_base()
 
 # Get environment or use default
 DATABASE_URL = os.getenv(
@@ -23,11 +8,12 @@ DATABASE_URL = os.getenv(
     # Default to localhost for local development
     "postgresql://user:password@localhost:5432/mydatabase"
 )
-engine = create_engine(DATABASE_URL)
+
+engine = create_engine(DATABASE_URL, future=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-
+# Database dependency for FastAPI routes
 def get_db():
     db = SessionLocal()
     try:
@@ -38,7 +24,7 @@ def get_db():
     finally:
         db.close()
 
-
+# Test database connection
 try:
     with engine.connect() as connection:
         connection.execute(text("SELECT 1"))
