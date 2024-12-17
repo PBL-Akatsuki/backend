@@ -47,7 +47,7 @@ def create_user(user: CreateUser, db: Session = Depends(get_db)):
 
     if existing_user:
         response = RedirectResponse(
-            url="http://localhost:5173/login", status_code=status.HTTP_303_SEE_OTHER)
+            url="http://18.232.187.175/login", status_code=status.HTTP_303_SEE_OTHER)
         response.set_cookie(
             key="message", value="User already exists. Please login.", httponly=False)
         return response
@@ -60,7 +60,7 @@ def create_user(user: CreateUser, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
 
-    return {"message": "User created successfully", "redirect_url": "http://localhost:5173/"}
+    return {"message": "User created successfully", "redirect_url": "http://18.232.187.175/"}
 
 
 @router.post('/login', status_code=status.HTTP_200_OK)
@@ -106,7 +106,7 @@ async def google_auth(request: Request, db: Session = Depends(get_db)):
             db.refresh(db_user)
 
         access_token = create_access_token({"sub": db_user.email})
-        redirect_url = f"http://localhost:5173/google-login?token={access_token}&username={db_user.username}"
+        redirect_url = f"http://18.232.187.175/google-login?token={access_token}&username={db_user.username}"
         print(f"Redirecting to: {redirect_url}")
         return RedirectResponse(url=redirect_url)
 
