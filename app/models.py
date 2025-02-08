@@ -3,7 +3,7 @@ try:
 except ImportError:
     from database import Base
 
-from sqlalchemy import Column, Integer, String, TIMESTAMP, Boolean, ForeignKey, text
+from sqlalchemy import Column, Integer, String, TIMESTAMP, ForeignKey, text
 from sqlalchemy.orm import relationship
 
 
@@ -24,6 +24,8 @@ class Module(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     title = Column(String, nullable=False)
     description = Column(String)
+    
+    chapters = relationship("Chapter", back_populates="module")
 
 
 class Chapter(Base):
@@ -33,8 +35,9 @@ class Chapter(Base):
     module_id = Column(Integer, ForeignKey("modules.id"), nullable=False)
     title = Column(String, nullable=False)
     content = Column(String, nullable=False)
-
-    module = relationship("Module")
+    
+    module = relationship("Module", back_populates="chapters")
+    quizzes = relationship("Quiz", back_populates="chapter")
 
 
 class Quiz(Base):
@@ -46,9 +49,9 @@ class Quiz(Base):
     option_a = Column(String, nullable=False)
     option_b = Column(String, nullable=False)
     option_c = Column(String, nullable=False)
-    correct_option = Column(String, nullable=False)  # This is NOT sent to the frontend
-    hint_a = Column(String, nullable=True)  # Hint for Option A (if incorrect)
-    hint_b = Column(String, nullable=True)  # Hint for Option B (if incorrect)
-    hint_c = Column(String, nullable=True)  # Hint for Option C (if incorrect)
-
-    chapter = relationship("Chapter")
+    correct_option = Column(String, nullable=False)
+    hint_a = Column(String, nullable=True)
+    hint_b = Column(String, nullable=True)
+    hint_c = Column(String, nullable=True)
+    
+    chapter = relationship("Chapter", back_populates="quizzes")
