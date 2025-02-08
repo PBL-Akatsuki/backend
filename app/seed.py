@@ -5,6 +5,12 @@ from app.models import Module, Chapter, Quiz
 def seed_data():
     db: Session = SessionLocal()
     try:
+        # Check if the module already exists to avoid duplicate seeding
+        existing_module = db.query(Module).filter_by(title="Data Science Module").first()
+        if existing_module:
+            print("Data already seeded, skipping seeding process.")
+            return
+
         # 1. Seed a Module (required by Chapter)
         module = Module(
             title="Data Science Module",
