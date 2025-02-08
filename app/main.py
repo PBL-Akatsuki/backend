@@ -1,44 +1,41 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
+from contextlib import asynccontextmanager
 import os
 
 try:
-    from app import models, database, users, quizzes
+    from app import models, database, users, quizzes, seed
 except ImportError:
     import models
     import database
     import users
     import quizzes
+    import seed
 
+# Create all tables
 models.Base.metadata.create_all(bind=database.engine)
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Seed the database
+    print("Seeding the database...")
+    seed.seed_data()  # Calls your seeding function
+    yield
+    # Shutdown: add any cleanup code here if needed
 
-origins = ["http://localhost:5173"]
+app = FastAPI(lifespan=lifespan)
 
-# CORS Middleware
+# Middleware configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["http://localhost:5173"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Session Middleware for managing user sessions
-app.add_middleware(SessionMiddleware, secret_key=os.environ.get("SESSION_SECRET", "super-secret-key"))
-
-# Include Routers for Users and Quizzes
-app.include_router(users.router)
-app.include_router(quizzes.router)
-
+app.add_middleware(SessionMiddleware, secret_key="your-secret-key")
 
 @app.get("/")
 def read_root():
-    return {"message": "Welcome to the NeoMyst Learning Platform!"}
-
-
-@app.get("/health")
-def health_check():
-    return {"status": "healthy"}
+    return {"message": "Welcome to FastAPI!"}
