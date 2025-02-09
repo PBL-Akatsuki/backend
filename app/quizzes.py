@@ -28,7 +28,8 @@ def validate_quiz_answer(quiz_id: int, user_answer: str, db: Session = Depends(g
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Quiz with id {quiz_id} not found"
         )
-    if quiz.correct_option == user_answer:
+    # Make the comparison case-insensitive
+    if quiz.correct_option.lower() == user_answer.lower():
         return {"result": "correct"}
     else:
         hint = getattr(quiz, f"hint_{user_answer.lower()}", "No hint available.")
