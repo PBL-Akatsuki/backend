@@ -12,9 +12,9 @@ except ImportError:
     import users
     import quizzes
     import seed
-
 # Create all tables
 models.Base.metadata.create_all(bind=database.engine)
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -36,9 +36,11 @@ app.add_middleware(
 )
 app.add_middleware(SessionMiddleware, secret_key="your-secret-key")
 
+
 @app.get("/")
 def read_root():
     return {"message": "Welcome to FastAPI!"}
+
 
 app.include_router(users.router)
 app.include_router(quizzes.router)

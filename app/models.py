@@ -14,8 +14,10 @@ class User(Base):
     username = Column(String, nullable=False)
     email = Column(String, nullable=False, unique=True)
     password = Column(String, nullable=False)
-    progress = Column(Integer, server_default="0")  # Tracks chapter progression
-    created_at = Column(TIMESTAMP(timezone=True), server_default=text('CURRENT_TIMESTAMP'), nullable=False)
+    # Tracks chapter progression
+    progress = Column(Integer, server_default="0")
+    created_at = Column(TIMESTAMP(timezone=True), server_default=text(
+        'CURRENT_TIMESTAMP'), nullable=False)
 
 
 class Module(Base):
@@ -24,7 +26,7 @@ class Module(Base):
     id = Column(Integer, primary_key=True, nullable=False)
     title = Column(String, nullable=False)
     description = Column(String)
-    
+
     chapters = relationship("Chapter", back_populates="module")
 
 
@@ -35,7 +37,7 @@ class Chapter(Base):
     module_id = Column(Integer, ForeignKey("modules.id"), nullable=False)
     title = Column(String, nullable=False)
     content = Column(String, nullable=False)
-    
+
     module = relationship("Module", back_populates="chapters")
     quizzes = relationship("Quiz", back_populates="chapter")
 
@@ -53,5 +55,5 @@ class Quiz(Base):
     hint_a = Column(String, nullable=True)
     hint_b = Column(String, nullable=True)
     hint_c = Column(String, nullable=True)
-    
+
     chapter = relationship("Chapter", back_populates="quizzes")
