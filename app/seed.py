@@ -2,18 +2,16 @@ from sqlalchemy.orm import Session
 from app.database import SessionLocal
 from app.models import Module, Chapter, Quiz
 
-
 def seed_data():
     db: Session = SessionLocal()
     try:
         # Check if the module already exists to avoid duplicate seeding
-        existing_module = db.query(Module).filter_by(
-            title="Data Science Module").first()
+        existing_module = db.query(Module).filter_by(title="Data Science Module").first()
         if existing_module:
             print("Data already seeded, skipping seeding process.")
             return
 
-        # 1. Seed a Module (required by Chapter)
+        # 1. Seed a Module (required by Chapters)
         module = Module(
             title="Data Science Module",
             description="A module covering data science fundamentals."
@@ -22,20 +20,20 @@ def seed_data():
         db.commit()  # Commit to generate an ID for the module
         db.refresh(module)
 
-        # 2. Seed a Chapter that belongs to the module
-        chapter = Chapter(
+        # 2. Seed Chapter 1 for Data Preprocessing
+        chapter1 = Chapter(
             module_id=module.id,
             title="Data Preprocessing Chapter",
             content="Content explaining data preprocessing steps."
         )
-        db.add(chapter)
-        db.commit()  # Commit to generate an ID for the chapter
-        db.refresh(chapter)
+        db.add(chapter1)
+        db.commit()  # Commit to generate an ID for chapter 1
+        db.refresh(chapter1)
 
-        # 3. Seed Quizzes that reference the chapter
-        quizzes = [
+        # 3. Seed Quizzes for Chapter 1 (Data Preprocessing)
+        quizzes_ch1 = [
             Quiz(
-                chapter_id=chapter.id,
+                chapter_id=chapter1.id,
                 question="What's the first thing Riley should do with the raw data?",
                 option_a="Start analyzing it immediately.",
                 option_b="Clean and organize it.",
@@ -46,7 +44,7 @@ def seed_data():
                 hint_c="Relying on intuition alone can lead you astray. Trusting the data will guide you to better insights."
             ),
             Quiz(
-                chapter_id=chapter.id,
+                chapter_id=chapter1.id,
                 question="The server logs are missing timestamps for the last 24 hours before the shutdown. What should Riley do?",
                 option_a="Remove those rows.",
                 option_b="Fill in the missing timestamps using the average time interval.",
@@ -57,7 +55,7 @@ def seed_data():
                 hint_c="Assuming the logs are irrelevant might lead to missing key patterns. It's always best to find a way to use the data!"
             ),
             Quiz(
-                chapter_id=chapter.id,
+                chapter_id=chapter1.id,
                 question="How would Riley encode the player levels?",
                 option_a="Beginner = 1, Intermediate = 2, Advanced = 3.",
                 option_b="Beginner = 0, Intermediate = 1, Advanced = 2.",
@@ -68,7 +66,7 @@ def seed_data():
                 hint_c="Leaving them as text could confuse the model. Encoding helps make the data more meaningful for analysis."
             ),
             Quiz(
-                chapter_id=chapter.id,
+                chapter_id=chapter1.id,
                 question="Riley finds a transaction where a player spent $1 million in NeoVerse coins. What should they do?",
                 option_a="Remove the transaction as an outlier.",
                 option_b="Investigate it further—it might be a clue.",
@@ -79,52 +77,102 @@ def seed_data():
                 hint_c="Leaving it without investigation could lead to missed opportunities to discover something important."
             ),
             Quiz(
-                chapter_id=chapter.id,
+                chapter_id=chapter1.id,
                 question="Player levels range from 0 to 100, and transaction amounts range from $0 to $1 million. How should Riley scale them?",
                 option_a="Normalize both to 0-1.",
                 option_b="Standardize both to have a mean of 0.",
                 option_c="Leave them as they are.",
                 correct_option="A",
-                hint_a="While this split isn't wrong, giving a bit more focus to validation and test sets might reduce the training data available.",
-                hint_b="Great choice! Normalizing both to the 0-1 range ensures that the data is on the same scale, making it easier for the model to process and compare.",
-                hint_c="Leaving them as they are could lead to the model being biased by differences in the scale of the features."
+                hint_a="While this split isn't wrong, normalization ensures all features contribute equally.",
+                hint_b="Great choice! Normalizing both to the 0-1 range makes it easier for the model to process and compare features.",
+                hint_c="Leaving them as they are could lead to the model being biased by differences in scale."
             ),
             Quiz(
-                chapter_id=chapter.id,
+                chapter_id=chapter1.id,
                 question="How should Riley combine the server logs and user profiles?",
                 option_a="Merge them based on user IDs.",
                 option_b="Concatenate them vertically.",
                 option_c="Keep them separate.",
                 correct_option="A",
-                hint_a="Concatenating vertically might lead to mismatches and inconsistencies, so merging based on user IDs is a safer approach.",
-                hint_b="Nice choice! Merging the data based on user IDs allows you to integrate relevant information and analyze the user's behavior more holistically.",
-                hint_c="Keeping them separate might make it harder to draw connections between the server logs and user profiles."
+                hint_a="Concatenating vertically might lead to mismatches and inconsistencies.",
+                hint_b="Nice choice! Merging based on user IDs integrates relevant information for a holistic analysis.",
+                hint_c="Keeping them separate might make it harder to draw meaningful connections."
             ),
             Quiz(
-                chapter_id=chapter.id,
+                chapter_id=chapter1.id,
                 question="Riley has 10,000 rows of cleaned data. How should they split it?",
                 option_a="70% training, 20% validation, 10% test.",
                 option_b="60% training, 20% validation, 20% test.",
                 option_c="80% training, 10% validation, 10% test.",
                 correct_option="A",
-                hint_a="While this split isn't wrong, giving a bit more focus to validation and test sets might reduce the training data available.",
-                hint_b="Great call! Splitting the data this way gives enough training data for the model, while still reserving a healthy portion for validation and testing.",
-                hint_c="Using a heavy split like 80% for training could leave you with too little data for validation and testing, making evaluation less reliable."
+                hint_a="While other splits are possible, this balance provides enough data for training while preserving samples for validation and testing.",
+                hint_b="Great call! This split provides a robust balance between training and evaluation data.",
+                hint_c="Using a heavy training split may reduce the reliability of validation and testing results."
             ),
             Quiz(
-                chapter_id=chapter.id,
-                question="Riley finds that \"age\" and \"birth year\" are highly correlated. What should they do?",
+                chapter_id=chapter1.id,
+                question="Riley finds that 'age' and 'birth year' are highly correlated. What should they do?",
                 option_a="Remove one of the features.",
                 option_b="Keep both features.",
                 option_c="Combine them into a new feature.",
                 correct_option="A",
-                hint_a="Keeping both could introduce redundancy, making it harder for the model to identify patterns without overfitting.",
-                hint_b="Smart move! Removing one of the correlated features helps reduce multicollinearity and keeps the model simpler and more efficient.",
-                hint_c="Combining them might not provide much new information and could complicate the feature set unnecessarily."
+                hint_a="Keeping both can lead to redundancy and overfitting.",
+                hint_b="Smart move! Removing one helps reduce multicollinearity and simplifies the model.",
+                hint_c="Combining them might add complexity without offering additional value."
             ),
         ]
-        db.add_all(quizzes)
+        db.add_all(quizzes_ch1)
         db.commit()
+
+        # 4. Seed Chapter 2 for Exploratory Data Analysis (EDA)
+        chapter2 = Chapter(
+            module_id=module.id,
+            title="Exploratory Data Analysis Chapter",
+            content="Content explaining exploratory data analysis, trends, and feature selection."
+        )
+        db.add(chapter2)
+        db.commit()  # Commit to generate an ID for chapter 2
+        db.refresh(chapter2)
+
+        # 5. Seed Quizzes for Chapter 2 (EDA)
+        quizzes_ch2 = [
+            Quiz(
+                chapter_id=chapter2.id,
+                question="What is the primary benefit of using visualizations in data analysis?",
+                option_a="They immediately reveal trends and outliers in the data.",
+                option_b="They make the dataset larger and more complex.",
+                option_c="They automatically remove noise from the data.",
+                correct_option="A",
+                hint_a="Correct! Visualizations quickly highlight trends and anomalies.",
+                hint_b="Visualizations simplify data interpretation rather than complicate it.",
+                hint_c="Although visualizations provide insights, they do not remove noise automatically."
+            ),
+            Quiz(
+                chapter_id=chapter2.id,
+                question="What does a high correlation between two features typically indicate?",
+                option_a="A potential relationship where the features move together.",
+                option_b="No relationship at all.",
+                option_c="Direct causation between the features.",
+                correct_option="A",
+                hint_a="Correct! High correlation suggests the features change together, though it doesn't prove causation.",
+                hint_b="A high correlation does suggest a relationship, but not direct causation.",
+                hint_c="Remember, correlation does not equal causation; it only indicates an association."
+            ),
+            Quiz(
+                chapter_id=chapter2.id,
+                question="Riley wants to know which specific factors, such as Hours Played or Money Spent, best predict player behavior. Which method gives a clear ranking of these individual features?",
+                option_a="PCA (Principal Component Analysis)",
+                option_b="Random Forest Analysis",
+                option_c="Correlation Matrix",
+                correct_option="B",
+                hint_a="PCA reduces dimensionality but doesn't rank individual features.",
+                hint_b="Correct! Random Forest Analysis provides a clear, interpretable ranking of feature importance.",
+                hint_c="A correlation matrix shows associations, not a ranked order of importance."
+            ),
+        ]
+        db.add_all(quizzes_ch2)
+        db.commit()
+
         print("Data seeded successfully!")
 
     except Exception as e:
@@ -132,7 +180,6 @@ def seed_data():
         print(f"Error seeding data: {e}")
     finally:
         db.close()
-
 
 if __name__ == "__main__":
     seed_data()
