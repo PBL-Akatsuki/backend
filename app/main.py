@@ -20,7 +20,8 @@ models.Base.metadata.create_all(bind=database.engine)
 async def lifespan(app: FastAPI):
     # Startup: Seed the database
     print("Seeding the database...")
-    seed.seed_data()  # Calls your seeding function
+    seed.seed_data()
+    seed.upload_neoverse_logs()  # Calls your seeding function
     yield
     # Shutdown: add any cleanup code here if needed
 
