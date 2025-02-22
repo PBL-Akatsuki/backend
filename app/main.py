@@ -2,16 +2,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from contextlib import asynccontextmanager
-import os
 
 try:
     from app import models, database, users, quizzes, seed
 except ImportError:
-    import models
-    import database
-    import users
-    import quizzes
-    import seed
+    import app.models as models
+    import app.database as database
+    import app.users as users
+    import app.quizzes as quizzes
+    import app.seed as seed
 # Create all tables
 models.Base.metadata.create_all(bind=database.engine)
 
