@@ -16,9 +16,12 @@ except ImportError:
 TEST_DATABASE_URL = "postgresql://user:password@localhost:5432/mydatabase"
 
 engine = create_engine(TEST_DATABASE_URL)
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+TestingSessionLocal = sessionmaker(
+    autocommit=False, autoflush=False, bind=engine)
 
 # Setup and teardown the database for testing
+
+
 @pytest.fixture(scope="module")
 def test_db():
     Base.metadata.create_all(bind=engine)
@@ -30,6 +33,8 @@ def test_db():
         Base.metadata.drop_all(bind=engine)
 
 # Override dependency
+
+
 @pytest.fixture(scope="module")
 def client(test_db):
     def override_get_db():
@@ -42,10 +47,13 @@ def client(test_db):
     return TestClient(app)
 
 # Test cases
+
+
 def test_get_users(client):
     response = client.get("/user/")
     assert response.status_code == 200
     assert response.json() == []
+
 
 def test_create_user(client):
     new_user = {
@@ -57,6 +65,7 @@ def test_create_user(client):
     assert response.status_code == 201
     assert response.json()["message"] == "User created successfully"
 
+
 def test_login_invalid_credentials(client):
     login_data = {
         "username_or_email": "nonexistentuser",
@@ -64,6 +73,7 @@ def test_login_invalid_credentials(client):
     }
     response = client.post("/user/login", json=login_data)
     assert response.status_code == 401  # Unauthorized
+
 
 def test_login_user(client):
     login_data = {
@@ -73,6 +83,7 @@ def test_login_user(client):
     response = client.post("/user/login", json=login_data)
     assert response.status_code == 200
     assert "access_token" in response.json()
+
 
 def test_create_user_missing_field(client):
     new_user = {
@@ -95,6 +106,7 @@ def test_delete_user(client):
     )
     response = client.delete("/user/delete-user/1")
     assert response.status_code == 204
+
 
 def test_delete_nonexistent_user(client):
     response = client.delete("/user/delete-user/9999")  # Non-existent ID
