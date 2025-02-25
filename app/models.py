@@ -3,7 +3,7 @@ try:
 except ImportError:
     from database import Base
 
-from sqlalchemy import Column, Integer, String, TIMESTAMP, ForeignKey, text
+from sqlalchemy import Column, Integer, Float, String, TIMESTAMP, ForeignKey, text
 from sqlalchemy.orm import relationship
 
 
@@ -57,3 +57,24 @@ class Quiz(Base):
     hint_c = Column(String, nullable=True)
 
     chapter = relationship("Chapter", back_populates="quizzes")
+
+
+class NeoverseLog(Base):
+    __tablename__ = "neoverse_logs"
+
+    player_id = Column(String, primary_key=True, nullable=False)
+    timestamp = Column(TIMESTAMP, nullable=False)
+    hours_played = Column(Integer, nullable=False)
+    money_spent = Column(Integer, nullable=False)
+    criminal_score = Column(Integer, nullable=False)
+    missions_completed = Column(Integer, nullable=False)
+    player_rank = Column(String, nullable=False)
+    team_affiliation = Column(String, nullable=False)
+    vip_status = Column(String, nullable=False)
+    cash_on_hand = Column(Integer, nullable=False)
+    sync_stability = Column(Float, nullable=False)
+    quest_exploit_score = Column(Integer, nullable=False)
+    player_level = Column(String, nullable=False)
+    dark_market_transactions = Column(String, nullable=False)
+    transaction_amount = Column(Integer, nullable=False)
+    neural_link_stability = Column(Float, nullable=False)
