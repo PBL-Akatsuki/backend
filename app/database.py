@@ -14,6 +14,8 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 # Database dependency for FastAPI routes
+
+
 def get_db():
     db = SessionLocal()
     try:
@@ -23,6 +25,7 @@ def get_db():
         raise
     finally:
         db.close()
+
 
 # Test database connection
 try:
